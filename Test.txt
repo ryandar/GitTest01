@@ -1,1 +1,69 @@
-Line 1 2134
+- commands
+  - Retrieve a Docker image
+    > sudo docker pull ruby:2.2.1
+    note this will pull from the docker.io offical site by default
+	to pull from a different registry,
+	> sudo docker login https://<YOUR-DOMAIN>:8080
+	and
+	> sudo docker pull <YOUR-DOMAIN>:8080/test-image
+	(see https://stackoverflow.com/questions/33054369/how-to-change-the-default-docker-registry-from-docker-io-to-my-private-registry)
+  - show installed images 
+    > docker images ls
+  - create a new container from an image 
+    - detached (i.e. jsut start the container, but do not enter its shell)
+	  > docker run -t -d ubuntu
+	  - note "-d" specified detached mode, i.e. run container in background and print container ID
+	  - note "-t" allocates a pseudo-TTY, which is required to keep the container running
+	- interactively (i.e. enters the shell of the running container)
+      > docker run -it ubuntu
+      - note where an image named "ubuntu" has been installed, i.e. is outputted from the "docker images" command
+  	  - note run is equivalent to a create and a start operation
+	  - note the specified -it options are shorthand for "--interactive" (attach STDIN) and "--tty" (allocate a pseudo-TTY),
+	    see https://docs.docker.com/engine/reference/commandline/run/
+  - Get a list of docker containers (note ps seemingly means process status)
+    > docker ps
+	  (show just running containers)
+    > docker ps -a
+	  (show all containers)
+    > docker container ls
+    > docker ps -a --format="container:{{.ID}} image:{{.Image}}"
+  - start a container that was previously stopped
+    > docker start -ai docker3
+	- note docker3 is the name of the container (which can be automtatically generated, eg "suspicious_allen")
+	- note the specified -ai options are shorthand for "--attach" (attach STDOUT/STDERR) and "--interactive" (attach STDIN),
+	  see https://docs.docker.com/engine/reference/commandline/start/
+  - stop a container
+    > docker stop 8d  (where 8d is the beginning of the hash of the container to remove)
+  - remove a running container
+    > docker rm 8d  (where 8d is the beginning of the hash of the container to remove)
+    > docker rm loving_euclid  (where 8d is the assigned name of the container to remove)
+	> docker rm 8d --force	
+  - stop all running containers
+    > docker stop $(docker ps -a -q)
+  - view all installed images
+    > docker images
+    > docker image ls
+  - open a bash prompt in a Linux container
+    > docker exec -it docker3 /bin/sh
+	> docker exec -it 6d16f /bin/sh
+    - from Windows
+	  > winpty docker exec -i -t aspnetcore_sample bash
+  - see https://medium.com/the-code-review/top-10-docker-commands-you-cant-live-without-54fb6377f481
+  - export an image to a zip file
+    (see "copy docker image from local machine to droplet" notes in DigitalOcean section)
+
+  - docker volume:
+    - create a new docker container mapped to a folder
+	    docker run -it -d -v /home/me/testdir01:/var/con-dir01 an-image-name
+	- create a volume
+	    docker volume create volume01
+	- view the created volumes using   
+	    docker volume ls
+    - create a new docker container mapped to a volume
+	    docker run -it -d -v volume01:/var/con-dir01 an-image-name
+	- view the contents of a volume
+	    docker run --rm -i -v=volume01:/tmp/myvolume busybox find /tmp/myvolume
+	  (note this presupposes that the busybox image has been downloaded using "docker pull busybox"
+      (from https://stackoverflow.com/questions/34803466/how-to-list-the-content-of-a-named-volume-in-docker-1-9)
+      
+  tagbrahch
