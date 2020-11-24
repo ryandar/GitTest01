@@ -65,5 +65,42 @@
 	    docker run --rm -i -v=volume01:/tmp/myvolume busybox find /tmp/myvolume
 	  (note this presupposes that the busybox image has been downloaded using "docker pull busybox"
       (from https://stackoverflow.com/questions/34803466/how-to-list-the-content-of-a-named-volume-in-docker-1-9)
-      
-  tagbrahch
+
+Docker compose: / docker-compose:
+- sample "docker-compose.yml" in aspnet core solution folder
+	version: "3.8"
+	services:
+		mssql:
+		    image: microsoft/mssql-server-linux:2017-latest
+		    container_name: sql1
+		    ports:
+		        - 1433:1433
+		    environment:
+		        SA_PASSWORD: "password"
+		        ACCEPT_EULA: "Y"
+		        MSSQL_PID: Developer
+		webui:
+			container_name: dar-web-01
+			build:
+				context: .
+				dockerfile: WebUI/Dockerfile
+			ports: 
+				- 32800:80
+			environment:
+				- DEBUG=100            
+		webapi:
+			container_name: dar-web-api-01
+			build: 
+				context: .
+				dockerfile: WebAPI/Dockerfile
+			ports: 
+				- 32801:80            
+			environment:
+				- DEBUG=99
+				- VBOX_MSI_INSTALL_PATH=Banana
+- commands  
+  - docker-compose build --no-cache		
+  - docker-compose up --force-recreate --no-deps 
+	  
+
+tagbrahch
