@@ -121,4 +121,54 @@ Docker compose: / docker-compose:
   - docker-compose up --force-recreate --no-deps 
 	  
 
+
+
+- create a web application using a self signed certificate
+  (see https://stackoverflow.com/questions/7580508/getting-chrome-to-accept-self-signed-localhost-certificate)
+  - become a Certificate Authority
+    - generate a private key 
+        openssl genrsa -des3 -out myCA.key 2048
+      (enter passphrase when prompted)
+    - generate root certificate
+        openssl req -x509 -new -nodes -key myCA.key -sha256 -days 825 -out myCA.pem
+  - create a CA-signed cert (using the CA created above)
+    - generate a private key  
+        openssl genrsa -out mywebsite01.com.key 2048
+    - create a certificate-signing request
+        openssl req -new -key mywebsite01.com.key -out mywebsite01.com.csr
+      (enter challenge when prompted)
+    - create a config file for the extensions
+        nano mywebsite01.com.ext
+      with the following contents:
+        authorityKeyIdentifier=keyid,issuer
+        basicConstraints=CA:FALSE
+        keyUsage = digitalSignature, nonRepudiation, keyEncipherment, dataEncipherment
+        subjectAltName = @alt_names
+        [alt_names]
+        DNS.1 = mywebsite01.com 
+        DNS.2 = other.mywebsite01.com
+        IP.1 = 192.168.0.13	
+    - create the signed certificate  
+        openssl x509 -req -in mywebsite01.com.csr -CA myCA.pem -CAkey myCA.key -CAcreateserial -out mywebsite01.com.crt -days 825 -sha256 -extfile mywebsite01.com.ext
+    - verify the signed certificate
+        openssl verify -CAfile myCA.pem -verify_hostname other.mywebsite01.com mywebsite01.com.crt
+      (enter a passphrase when prompted, e.g. "pfxpass")
+    - create a pfx
+      (from https://stackoverflow.com/questions/6307886/how-to-create-pfx-file-from-certificate-and-private-key)
+        openssl pkcs12 -export -out mywebsite01.com.pfx -inkey mywebsite01.com.key -in mywebsite01.com.crt
+  - create an asp.net core application using the cert
+    (see https://docs.microsoft.com/en-us/aspnet/core/security/docker-https?view=aspnetcore-3.1)
+    (see https://docs.microsoft.com/en-us/aspnet/core/host-and-deploy/docker/building-net-docker-images?view=aspnetcore-3.1)
+    - retrieve the docker image
+        docker pull mcr.microsoft.com/dotnet/core/samples:aspnetapp
+    - create a container and start it
+        docker run  -t -d  --rm -it -p 8000:80 -p 8001:443 -e ASPNETCORE_URLS="https://+;http://+" -e ASPNETCORE_HTTPS_PORT=8001 -e ASPNETCORE_Kestrel__Certificates__Default__Password="pfxpass" -e ASPNETCORE_Kestrel__Certificates__Default__Path=/https/mywebsite01.com.pfx -v /tmp/dar01:/https/ mcr.microsoft.com/dotnet/core/samples:aspnetapp
+    - browse to the running application (for example using the DigitialOcean droplet IP address)
+        http://157.245.36.75:8000
+    - view the certificate details in the browser (clicking on the padlock icon to the left of the url)
+	- note the site will not be secure unless the CA authority root cert is installed on the browser 
+	
+	
+	
+
 tagbrahch
