@@ -98,6 +98,24 @@ Docker compose: / docker-compose:
 			environment:
 				- DEBUG=99
 				- VBOX_MSI_INSTALL_PATH=Banana
+
+
+      version: "3.8"
+      services:
+        my_linux_app:
+          image: busybox
+          container_name: my-busybox-02
+          ports:
+            - 33001:80
+          environment:
+            - DEBUG=99
+            - VBOX_MSI_INSTALL_PATH=Banana12
+            - ENV1=env01
+          volumes:
+            - /home/my/docker01/test-volume01:/tmp/test-volume01
+          tty: true  #required to keep container running
+	  
+	  
 - commands  
   - docker-compose build --no-cache		
   - docker-compose up --force-recreate --no-deps 
