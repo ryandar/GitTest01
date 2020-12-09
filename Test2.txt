@@ -19,3 +19,23 @@ FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
 ENTRYPOINT ["dotnet", "WebAPI.dll"]
+
+
+
+
+
+
+- .dockerignore
+  - note that all the files in the folder containing the dockerfile will be copied to the Docker 
+    daemon as the "build context", except those files/folders specified in the ".dockerignore" file.
+    This can increase the duration of the docker build substantially.
+    (see https://docs.docker.com/develop/develop-images/dockerfile_best-practices/)
+  - sample contents:
+    **/bin
+    **/obj
+    **/out
+    **/.vscode
+    **/.vs
+    **/node_modules/
+    .dotnet
+    .Microsoft.DotNet.ImageBuilder
